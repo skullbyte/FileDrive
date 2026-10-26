@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Encoding')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('encoding')}"></header>
+
+<main class="pagina">
+    <!-- Práctica 9: conversión de encoding con InputStreamReader / OutputStreamWriter -->
+    <section class="tarjeta estrecha">
+        <h2>🔤 Cambio de encoding</h2>
+        <form th:action="@{/encoding}" th:object="${enc}" method="post" class="rejilla">
+            <label>Fichero de entrada
+                <select th:field="*{entrada}" required>
+                    <option th:each="f : ${ficheros}" th:value="${f}" th:text="${f}"></option>
+                </select>
+            </label>
+            <label>Encoding de entrada
+                <select th:field="*{encEntrada}">
+                    <option th:each="e : ${encodings}" th:value="${e}" th:text="${e}"></option>
+                </select>
+            </label>
+            <label>Fichero de salida (se crea)
+                <input type="text" th:field="*{salida}" placeholder="carpeta/salida.txt" required>
+            </label>
+            <label>Encoding de salida
+                <select th:field="*{encSalida}">
+                    <option th:each="e : ${encodings}" th:value="${e}" th:text="${e}"></option>
+                </select>
+            </label>
+            <p class="botones"><button>Convertir</button></p>
+        </form>
+
+        <p th:if="${enc.resultado}" class="aviso"
+           th:classappend="${#strings.startsWith(enc.resultado, 'ERROR')} ? 'mal' : 'ok'" th:text="${enc.resultado}"></p>
+        <p class="botones" th:if="${enc.resultado != null and !#strings.startsWith(enc.resultado, 'ERROR')}">
+            <a class="btn secundario" th:href="@{/drive/info(ruta=${enc.salida})}">ℹ️ Ver fichero de salida</a>
+            <a class="btn secundario" th:href="@{/drive/descargar(ruta=${enc.salida})}">⬇️ Descargar</a>
+        </p>
+    </section>
+</main>
+</body>
+</html>

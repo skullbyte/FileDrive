@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('SDMX-CSV')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('csv')}"></header>
+
+<main class="pagina">
+    <div th:replace="~{fragments :: avisos}"></div>
+
+    <!-- Práctica 6: editor de datos SDMX-CSV de EUROSTAT -->
+    <section class="tarjeta">
+        <h2>📊 Datos SDMX-CSV (EUROSTAT)</h2>
+        <p class="ayuda" th:if="${#lists.isEmpty(ficherosCsv)}">
+            No hay ningún .csv en el drive. Descarga una serie de datos en formato SDMX-CSV desde
+            <a href="https://ec.europa.eu/eurostat/databrowser/explore/all/" target="_blank">EUROSTAT</a>
+            y súbela desde el <a th:href="@{/drive}">explorador</a>.
+        </p>
+        <form th:action="@{/csv}" th:object="${csv}" method="post" class="filtros" th:unless="${#lists.isEmpty(ficherosCsv)}">
+            <label>Fichero
+                <select th:field="*{fichero}">
+                    <option th:each="f : ${ficherosCsv}" th:value="${f}" th:text="${f}"></option>
+                </select>
+            </label>
+            <label>A · País (geo)
+                <input type="text" th:field="*{pais}" placeholder="ES o Spain">
+            </label>
+            <label>B · Fecha (TIME_PERIOD)
+                <input type="text" th:field="*{fecha}" placeholder="2023">
+            </label>
+            <label>C · Columna
+                <select th:field="*{columna}">
+                    <option value="">(todas)</option>
+                    <option th:each="c : ${cabecera}" th:value="${c}" th:text="${c}"></option>
+                </select>
+            </label>
+            <button>Filtrar</button>
+        </form>
+    </section>
+
+    <th:block th:if="${cabecera}">
+        <div class="columnas">
+            <!-- D: tabla resumen PAÍS; MÍNIMO; MÁXIMO -->
+            <section class="tarjeta">
+                <h3>D · Resumen por país</h3>
+                <table class="tabla">
+                    <thead><tr><th>País</th><th>Valor mínimo</th><th>Valor máximo</th></tr></thead>
+                    <tbody>
+                    <tr th:each="r : ${resumen}">
+                        <td th:text="${r[0]}"></td><td class="num" th:text="${r[1]}"></td><td class="num" th:text="${r[2]}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(resumen)}"><td colspan="3" class="vacio">Sin datos</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="tarjeta ancha">
+                <h3 th:text="${numFiltradas} + ' de ' + ${totalFilas} + ' filas' + (${numFiltradas > 500} ? ' (se muestran 500)' : '')"></h3>
+
+                <!-- C: solo la columna pedida -->
+                <table class="tabla" th:if="${valoresColumna}">
+                    <thead><tr><th th:text="${csv.columna}"></th></tr></thead>
+                    <tbody><tr th:each="v : ${valoresColumna}"><td th:text="${v}"></td></tr></tbody>
+                </table>
+
+                <div class="desplazable" th:unless="${valoresColumna}">
+                    <table class="tabla">
+                        <thead><tr><th th:each="c : ${cabecera}" th:text="${c}"></th></tr></thead>
+                        <tbody>
+                        <tr th:each="fila : ${filas}"><td th:each="v : ${fila}" th:text="${v}"></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </th:block>
+</main>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<!-- Cabecera común: título y CSS de FILEDRIVE -->
+<head th:fragment="head(titulo)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${titulo} + ' · FileDrive'">FileDrive</title>
+    <link rel="stylesheet" th:href="@{/css/filedrive.css}">
+</head>
+
+<body>
+
+<!-- Menú superior con las funcionalidades del proyecto -->
+<header th:fragment="nav(activo)" class="nav">
+    <a class="marca" th:href="@{/drive}">📁 FileDrive</a>
+    <nav>
+        <a th:href="@{/drive}" th:classappend="${activo == 'drive'} ? 'activo'">Explorador</a>
+        <a th:href="@{/aleatorio}" th:classappend="${activo == 'aleatorio'} ? 'activo'">Acceso aleatorio</a>
+        <a th:href="@{/csv}" th:classappend="${activo == 'csv'} ? 'activo'">SDMX-CSV</a>
+        <a th:href="@{/encoding}" th:classappend="${activo == 'encoding'} ? 'activo'">Encoding</a>
+    </nav>
+</header>
+
+<!-- Mensajes de éxito / error (vienen del controlador o como flash attributes) -->
+<div th:fragment="avisos">
+    <p class="aviso ok" th:if="${mensaje}" th:text="${mensaje}"></p>
+    <p class="aviso mal" th:if="${error}" th:text="${error}"></p>
+</div>
+
+<!-- Migas de pan de la ruta actual -->
+<div th:fragment="migas" class="migas">
+    <a th:href="@{/drive}">drive</a>
+    <th:block th:each="m : ${migas}">
+        <span>/</span>
+        <a th:href="@{/drive(ruta=${m[1]})}" th:text="${m[0]}"></a>
+    </th:block>
+</div>
+
+</body>
+</html>

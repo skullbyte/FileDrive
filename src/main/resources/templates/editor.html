@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Editor')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('drive')}"></header>
+
+<main class="pagina">
+    <div th:replace="~{fragments :: migas}"></div>
+    <div th:replace="~{fragments :: avisos}"></div>
+
+    <div class="columnas">
+        <!-- Edición completa del fichero (BufferedReader para leer, BufferedWriter para guardar) -->
+        <section class="tarjeta ancha">
+            <h2>✏️ <span th:text="${info.nombre}"></span>
+                <small th:text="${info.tamanoLegible} + ' · ' + ${info.ultimaModificacion}"></small></h2>
+            <form th:action="@{/editor}" th:object="${editor}" method="post">
+                <input type="hidden" th:field="*{ruta}">
+                <textarea th:field="*{contenido}" rows="22" class="codigo" spellcheck="false"></textarea>
+                <p class="botones">
+                    <button name="accion" value="guardar">💾 Guardar</button>
+                    <a class="btn secundario" th:href="@{/drive(ruta=${info.padre})}">Cerrar</a>
+                </p>
+            </form>
+        </section>
+
+        <aside class="lateral">
+            <!-- Práctica 5: añadir al final / al principio -->
+            <section class="tarjeta">
+                <h3>Añadir texto</h3>
+                <form th:action="@{/editor}" method="post">
+                    <input type="hidden" name="ruta" th:value="${editor.ruta}">
+                    <textarea name="texto" rows="4" placeholder="Texto a añadir" required></textarea>
+                    <p class="botones">
+                        <button name="accion" value="principio">⤒ Al principio</button>
+                        <button name="accion" value="final">⤓ Al final</button>
+                    </p>
+                </form>
+            </section>
+
+            <!-- Práctica 3: vocales -->
+            <section class="tarjeta">
+                <h3>Vocales</h3>
+                <table class="tabla centrada">
+                    <thead><tr><th></th><th>a</th><th>e</th><th>i</th><th>o</th><th>u</th></tr></thead>
+                    <tbody>
+                    <tr><td>FileReader</td><td th:each="v : ${info.vocalesFileReader}" th:text="${v}"></td></tr>
+                    <tr><td>BufferedReader</td><td th:each="v : ${info.vocales}" th:text="${v}"></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="tarjeta">
+                <h3>Más</h3>
+                <p class="botones">
+                    <a class="btn secundario" th:href="@{/drive/info(ruta=${info.ruta})}">ℹ️ Info</a>
+                    <a class="btn secundario" th:href="@{/encoding(ruta=${info.ruta})}">🔤 Encoding</a>
+                    <a class="btn secundario" th:if="${info.extension == 'csv'}" th:href="@{/csv(fichero=${info.ruta})}">📊 SDMX-CSV</a>
+                </p>
+            </section>
+        </aside>
+    </div>
+</main>
+</body>
+</html>

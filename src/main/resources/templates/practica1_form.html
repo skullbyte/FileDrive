@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Práctica 1 - Formulario</title>
+    <!-- 5) Se prepara un CSS global o particular para cada práctica -->
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+    <div class="container">
+        <h1>Práctica 1: Convertir a Mayúsculas</h1>
+        <p>Introduce un texto para procesarlo con la clase Drive.java.</p>
+        
+        <!-- El form apunta al POST de /practica1, inyectando el objeto "datos" -->
+        <form th:action="@{/practica1}" th:object="${datos}" method="post">
+            
+            <label for="textoEntrada">Texto de entrada:</label>
+            <!-- Vinculamos el input con la propiedad "textoEntrada" del Modelo -->
+            <input type="text" id="textoEntrada" th:field="*{textoEntrada}" required />
+            
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+</body>
+</html>

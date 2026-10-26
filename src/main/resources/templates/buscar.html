@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Buscar')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('drive')}"></header>
+
+<main class="pagina">
+    <div th:replace="~{fragments :: avisos}"></div>
+
+    <!-- Práctica 4: línea y columna de cada aparición del texto -->
+    <section class="tarjeta">
+        <h2>Buscar texto en <code th:text="'/' + ${buscar.carpeta}"></code></h2>
+        <form th:action="@{/buscar}" th:object="${buscar}" method="post" class="fila">
+            <input type="hidden" th:field="*{carpeta}">
+            <input type="text" th:field="*{texto}" required>
+            <label><input type="checkbox" th:field="*{recursivo}"> Subcarpetas</label>
+            <button>Buscar</button>
+        </form>
+
+        <p th:if="${resultados}" class="ayuda"
+           th:text="${#lists.size(resultados)} + ' apariciones de &quot;' + ${buscar.texto} + '&quot;'"></p>
+        <table class="tabla" th:if="${resultados != null and !#lists.isEmpty(resultados)}">
+            <thead><tr><th>Fichero</th><th>Línea</th><th>Columna</th><th>Texto</th></tr></thead>
+            <tbody>
+            <tr th:each="c : ${resultados}">
+                <td><a th:href="@{/editor(ruta=${c.fichero})}" th:text="${c.fichero}"></a></td>
+                <td th:text="${c.linea}"></td>
+                <td th:text="${c.columna}"></td>
+                <td><code th:text="${c.textoLinea}"></code></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <p class="botones"><a class="btn" th:href="@{/drive(ruta=${buscar.carpeta})}">← Volver al explorador</a></p>
+</main>
+</body>
+</html>

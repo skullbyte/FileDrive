@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Información')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('drive')}"></header>
+
+<main class="pagina">
+    <div th:replace="~{fragments :: migas}"></div>
+    <div th:replace="~{fragments :: avisos}"></div>
+
+    <!-- Práctica 1: información disponible de java.io.File -->
+    <section class="tarjeta">
+        <h2><span th:text="${info.directorio} ? '📁' : '📄'"></span> <span th:text="${info.nombre}"></span></h2>
+        <table class="tabla datos">
+            <tr><th>getName()</th><td th:text="${info.nombre}"></td></tr>
+            <tr><th>getPath()</th><td th:text="${info.path}"></td></tr>
+            <tr><th>getAbsolutePath()</th><td th:text="${info.rutaAbsoluta}"></td></tr>
+            <tr><th>getCanonicalPath()</th><td th:text="${info.rutaCanonica}"></td></tr>
+            <tr><th>getParent()</th><td th:text="${info.parent}"></td></tr>
+            <tr><th>toURI()</th><td th:text="${info.uri}"></td></tr>
+            <tr><th>isFile() / isDirectory()</th><td th:text="${info.fichero} + ' / ' + ${info.directorio}"></td></tr>
+            <tr><th>isHidden()</th><td th:text="${info.oculto}"></td></tr>
+            <tr><th>isAbsolute()</th><td th:text="${info.absoluto}"></td></tr>
+            <tr><th>canRead() / canWrite() / canExecute()</th><td th:text="${info.lectura} + ' / ' + ${info.escritura} + ' / ' + ${info.ejecucion}"></td></tr>
+            <tr><th>length()</th><td th:text="${info.tamano} + ' bytes (' + ${info.tamanoLegible} + ')'"></td></tr>
+            <tr><th>lastModified()</th><td th:text="${info.ultimaModificacion}"></td></tr>
+            <tr th:if="${info.directorio}"><th>list().length</th><td th:text="${info.numHijos}"></td></tr>
+            <tr><th>getTotalSpace()</th><td th:text="${info.espacioTotalLegible}"></td></tr>
+            <tr><th>getFreeSpace()</th><td th:text="${info.espacioLibreLegible}"></td></tr>
+            <tr><th>getUsableSpace()</th><td th:text="${info.espacioUsableLegible}"></td></tr>
+        </table>
+    </section>
+
+    <!-- Práctica 3: conteo de vocales con las dos implementaciones -->
+    <section class="tarjeta" th:if="${info.fichero}">
+        <h3>Vocales del fichero</h3>
+        <table class="tabla centrada">
+            <thead><tr><th>Implementación</th><th>a</th><th>e</th><th>i</th><th>o</th><th>u</th></tr></thead>
+            <tbody>
+            <tr>
+                <td>FileReader.read()</td>
+                <td th:each="v : ${info.vocalesFileReader}" th:text="${v}"></td>
+            </tr>
+            <tr>
+                <td>BufferedReader.readLine()</td>
+                <td th:each="v : ${info.vocales}" th:text="${v}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <p class="botones">
+        <a class="btn" th:href="@{/drive(ruta=${info.padre})}">← Volver</a>
+        <a class="btn" th:if="${info.texto}" th:href="@{/editor(ruta=${info.ruta})}">✏️ Editar</a>
+        <a class="btn" th:if="${info.fichero}" th:href="@{/drive/descargar(ruta=${info.ruta})}">⬇️ Descargar</a>
+    </p>
+</main>
+</body>
+</html>

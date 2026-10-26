@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Acceso aleatorio')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('aleatorio')}"></header>
+
+<main class="pagina">
+    <div th:replace="~{fragments :: avisos}"></div>
+
+    <!-- Prácticas 7 y 8: registros de longitud fija con RandomAccessFile -->
+    <section class="tarjeta">
+        <h2>🗃️ Fichero de acceso aleatorio</h2>
+        <form th:action="@{/aleatorio}" method="get" class="fila">
+            <label>Fichero
+                <input type="text" name="fichero" th:value="${reg.fichero}" list="ficherosDat">
+            </label>
+            <datalist id="ficherosDat">
+                <option th:each="f : ${ficherosDat}" th:value="${f}"></option>
+            </datalist>
+            <button class="secundario">Abrir</button>
+        </form>
+        <p class="ayuda" th:if="${longReg}">
+            Registro = DNI (texto 9 B) + NOMBRE (texto 32 B) + CIUDAD (texto 24 B) + EDAD (int 4 B) + FECHA_ALTA (long 8 B)
+            = <b th:text="${longReg}"></b> bytes.
+            Tamaño del fichero: <b th:text="${tamano}"></b> bytes → <b th:text="${#lists.size(registros)}"></b> registros.
+            El registro <i>n</i> empieza en el byte <i>n</i> × <span th:text="${longReg}"></span>.
+        </p>
+
+        <table class="tabla">
+            <thead>
+            <tr><th>#</th><th>Byte</th><th th:each="c : ${campos}" th:text="${c}"></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="r, it : ${registros}" th:classappend="${r['DNI'] == '' and r['NOMBRE'] == ''} ? 'borrado'">
+                <td th:text="${it.index}"></td>
+                <td class="num" th:text="${it.index * longReg}"></td>
+                <td th:each="c : ${campos}" th:text="${r.get(c)}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(registros)}"><td th:colspan="${#lists.size(campos) + 2}" class="vacio">Fichero vacío o inexistente: inserta el primer registro</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <div class="tarjeta consulta" th:if="${consulta}">
+        <code th:text="${consulta}"></code> → <code th:text="${resultado}"></code>
+    </div>
+
+    <div class="columnas">
+        <!-- Insertar y update(row, Map) -->
+        <section class="tarjeta">
+            <h3>Registro completo</h3>
+            <form th:action="@{/aleatorio}" th:object="${reg}" method="post" class="rejilla">
+                <input type="hidden" th:field="*{fichero}">
+                <label>Fila <input type="number" min="0" th:field="*{fila}" placeholder="(al final)"></label>
+                <label>DNI <input type="text" th:field="*{dni}" maxlength="9"></label>
+                <label>NOMBRE <input type="text" th:field="*{nombre}" maxlength="32"></label>
+                <label>CIUDAD <input type="text" th:field="*{ciudad}" maxlength="24"></label>
+                <label>EDAD <input type="number" th:field="*{edad}"></label>
+                <label>FECHA_ALTA <input type="date" th:field="*{fechaAlta}"></label>
+                <p class="botones">
+                    <button name="accion" value="insertar" title="Sin fila: añade al final">insertar</button>
+                    <button name="accion" value="update" title="Solo cambia los campos rellenos">update(fila, Map)</button>
+                </p>
+            </form>
+        </section>
+
+        <!-- update(row, campo, valor), delete y los SELECT -->
+        <section class="tarjeta">
+            <h3>Campo / consultas</h3>
+            <form th:action="@{/aleatorio}" th:object="${reg}" method="post" class="rejilla">
+                <input type="hidden" th:field="*{fichero}">
+                <label>Fila <input type="number" min="0" th:field="*{fila}"></label>
+                <label>Campo
+                    <select th:field="*{campo}">
+                        <option th:each="c : ${campos}" th:value="${c}" th:text="${c}"></option>
+                    </select>
+                </label>
+                <label>Valor <input type="text" th:field="*{valor}"></label>
+                <p class="botones">
+                    <button name="accion" value="updateCampo">update(fila, campo, valor)</button>
+                    <button name="accion" value="delete" class="peligro">delete(fila)</button>
+                </p>
+                <p class="botones">
+                    <button name="accion" value="selectCampo" class="secundario">selectCampo(fila, campo)</button>
+                    <button name="accion" value="selectColumna" class="secundario">selectColumna(campo)</button>
+                    <button name="accion" value="selectRowList" class="secundario">selectRowList(fila)</button>
+                    <button name="accion" value="selectRowMap" class="secundario">selectRowMap(fila)</button>
+                </p>
+            </form>
+        </section>
+    </div>
+</main>
+</body>
+</html>

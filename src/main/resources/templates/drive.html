@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Explorador')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('drive')}"></header>
+
+<main class="pagina">
+    <div th:replace="~{fragments :: migas}"></div>
+    <div th:replace="~{fragments :: avisos}"></div>
+
+    <div class="columnas">
+        <!-- ===== 1. EXPLORADOR (prácticas 1, 3 y 4) ===== -->
+        <section class="tarjeta ancha">
+            <h2>Contenido de <code th:text="'/' + ${ruta}">/</code></h2>
+            <table class="tabla">
+                <thead>
+                <tr>
+                    <th></th><th>Nombre</th><th>Tamaño</th><th>Modificado</th><th>Permisos</th>
+                    <th title="Vocales a / e / i / o / u (práctica 3)">a e i o u</th><th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${ruta != ''}">
+                    <td>↩</td>
+                    <td colspan="6"><a th:href="@{/drive(ruta=${padre})}">.. (subir)</a></td>
+                </tr>
+                <tr th:each="f : ${ficheros}">
+                    <td class="icono" th:text="${f.directorio} ? '📁' : (${f.texto} ? '📄' : '📦')"></td>
+                    <td>
+                        <a th:if="${f.directorio}" th:href="@{/drive(ruta=${f.ruta})}" th:text="${f.nombre}"></a>
+                        <a th:if="${f.texto}" th:href="@{/editor(ruta=${f.ruta})}" th:text="${f.nombre}"></a>
+                        <a th:if="${f.fichero and !f.texto}" th:href="@{/drive/info(ruta=${f.ruta})}" th:text="${f.nombre}"></a>
+                    </td>
+                    <td th:text="${f.tamanoLegible}"></td>
+                    <td th:text="${f.ultimaModificacion}"></td>
+                    <td><code th:text="${f.permisos}"></code></td>
+                    <td class="vocales">
+                        <th:block th:if="${f.vocales}">
+                            <span th:each="v : ${f.vocales}" th:text="${v}"></span>
+                        </th:block>
+                    </td>
+                    <td class="acciones">
+                        <a th:href="@{/drive/info(ruta=${f.ruta})}" title="Información">ℹ️</a>
+                        <a th:if="${f.texto}" th:href="@{/editor(ruta=${f.ruta})}" title="Editar">✏️</a>
+                        <a th:if="${f.fichero}" th:href="@{/drive/descargar(ruta=${f.ruta})}" title="Descargar">⬇️</a>
+                        <a th:if="${f.extension == 'csv'}" th:href="@{/csv(fichero=${f.ruta})}" title="Abrir en el editor SDMX-CSV">📊</a>
+                        <a th:if="${f.extension == 'dat'}" th:href="@{/aleatorio(fichero=${f.ruta})}" title="Abrir como fichero de acceso aleatorio">🗃️</a>
+                        <a th:if="${f.texto}" th:href="@{/encoding(ruta=${f.ruta})}" title="Cambiar encoding">🔤</a>
+                        <form th:action="@{/drive}" method="post" class="enlinea"
+                              th:attr="onsubmit=|return confirm('¿Borrar ${f.nombre}?')|">
+                            <input type="hidden" name="_method" value="delete">
+                            <input type="hidden" name="ruta" th:value="${f.ruta}">
+                            <button class="peligro mini" title="Borrar">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(ficheros)}">
+                    <td colspan="7" class="vacio">Carpeta vacía</td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <aside class="lateral">
+            <!-- ===== 2. CREACIÓN (prácticas 2 y 5) ===== -->
+            <section class="tarjeta">
+                <h3>Crear</h3>
+                <form th:action="@{/drive/crear}" th:object="${crear}" method="post">
+                    <input type="hidden" th:field="*{carpeta}">
+                    <div class="fila">
+                        <label><input type="radio" th:field="*{tipo}" value="fichero"> Fichero</label>
+                        <label><input type="radio" th:field="*{tipo}" value="carpeta"> Carpeta</label>
+                    </div>
+                    <input type="text" th:field="*{nombre}" placeholder="nombre.txt" required>
+                    <textarea th:field="*{contenido}" rows="3" placeholder="Contenido inicial (opcional, solo ficheros)"></textarea>
+                    <button>Crear</button>
+                </form>
+                <form th:action="@{/drive/familia}" method="post" class="separado">
+                    <input type="hidden" name="carpeta" th:value="${ruta}">
+                    <button class="secundario" title="Abuelo/Abuela → Padre/Madre → Hijo1..Hija8.txt">Crear estructura Abuelos/Padres/Hijos</button>
+                </form>
+            </section>
+
+            <section class="tarjeta">
+                <h3>Subir fichero</h3>
+                <form th:action="@{/drive/subir}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="carpeta" th:value="${ruta}">
+                    <input type="file" name="fichero" required>
+                    <button>Subir</button>
+                </form>
+            </section>
+
+            <!-- ===== 3. ELIMINACIÓN (práctica 2) ===== -->
+            <section class="tarjeta">
+                <h3>Buscar y borrar por nombre</h3>
+                <p class="ayuda">Recorre recursivamente esta carpeta y elimina los ficheros con ese nombre.</p>
+                <form th:action="@{/drive/borrar-nombre}" th:object="${borrar}" method="post">
+                    <input type="hidden" th:field="*{carpeta}">
+                    <input type="text" th:field="*{nombre}" placeholder="Hija4.txt" required>
+                    <button class="peligro">Borrar</button>
+                </form>
+            </section>
+
+            <!-- ===== Práctica 4: buscar texto ===== -->
+            <section class="tarjeta">
+                <h3>Buscar texto</h3>
+                <form th:action="@{/buscar}" th:object="${buscar}" method="post">
+                    <input type="hidden" th:field="*{carpeta}">
+                    <input type="text" th:field="*{texto}" placeholder="Texto a buscar" required>
+                    <label class="fila"><input type="checkbox" th:field="*{recursivo}"> Incluir subcarpetas</label>
+                    <button>Buscar</button>
+                </form>
+            </section>
+        </aside>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Lista de productos</title>
+</head>
+<body>
+    <h1>Objeto Individual</h1>
+    <p>Número: <span th:text="${objeto.numero}"></span></p>
+    <p>Concepto: <span th:text="${objeto.concepto}"></span></p>
+    <p>Importe: <span th:text="${objeto.importe}"></span></p>
+
+    <h1>Catálogo completo</h1>
+    
+    <ul th:each="producto : ${lista}">
+        <li th:text="${producto.numero}"></li>
+        <li th:text="${producto.concepto}"></li>
+        <li th:text="${producto.importe}"></li>
+    </ul>
+</body>
+</html>

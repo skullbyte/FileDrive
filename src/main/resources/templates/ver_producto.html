@@ -1,0 +1,12 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Un solo producto</title>
+</head>
+<body>
+    <h1>Detalles del producto</h1>
+    <!-- Accedemos a los datos con ${nombreVariable.atributo} -->
+    <p>Número: <span th:text="${objeto.numero}"></span></p>
+    <p>Concepto: <span th:text="${objeto.concepto}"></span></p>
+    <p>Importe: <span th:text="${objeto.importe}"></span>€</p>
+</body>
+</html>

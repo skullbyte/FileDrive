@@ -1,0 +1,3 @@
+Bienvenido a FileDrive.
+Desde aquí puedes explorar, crear, editar y borrar ficheros.
+Prueba a buscar la palabra "ficheros" o a cambiar el encoding de este texto.

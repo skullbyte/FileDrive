@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Práctica 1 - Resultado</title>
+    <!-- 5) Se prepara un CSS global o particular para cada práctica -->
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+    <div class="container result-box">
+        <h1>Resultado de la Práctica 1</h1>
+        
+        <p><strong>Texto original:</strong> <span th:text="${datos.textoEntrada}"></span></p>
+        
+        <p><strong>Texto procesado (Mayúsculas):</strong> <span th:text="${datos.textoSalida}" style="color: blue;"></span></p>
+        
+        <a th:href="@{/practica1}" class="btn">Volver a intentar</a>
+    </div>
+</body>
+</html>
