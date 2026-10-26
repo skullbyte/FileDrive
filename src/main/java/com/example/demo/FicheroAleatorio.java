@@ -127,6 +127,10 @@ public class FicheroAleatorio {
 
     // 5.1) Modifica todos los campos del registro que vengan en el Map
     public void update(int row, Map<String, String> valores) throws IOException {
+        // Primero se comprueban todos los campos, así si uno es incorrecto no se modifica ninguno
+        for (Map.Entry<String, String> e : valores.entrySet()) {
+            codificar(indiceCampo(e.getKey()), e.getValue() == null ? "" : e.getValue());
+        }
         for (Map.Entry<String, String> e : valores.entrySet()) {
             update(row, e.getKey(), e.getValue());
         }

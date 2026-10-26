@@ -115,6 +115,9 @@ class FileDriveTests {
         assertEquals("Granada 😀", faa.selectCampo(1, "CIUDAD"));
 
         assertThrows(IOException.class, () -> faa.update(1, "EDAD", "abc"));
+        // update(row, Map) con un campo incorrecto no modifica ninguno
+        assertThrows(IOException.class, () -> faa.update(3, new java.util.LinkedHashMap<>(Map.of("CIUDAD", "Sevilla", "EDAD", "abc"))));
+        assertEquals("Granada", faa.selectCampo(3, "CIUDAD"));
         assertThrows(IOException.class, () -> faa.selectRowMap(10));
     }
 
@@ -148,6 +151,11 @@ class FileDriveTests {
                 """);
         SdmxCsv datos = new SdmxCsv(csv.toFile());
         assertEquals(4, datos.getFilas().size());
+
+        // Con BOM al principio la primera columna se sigue llamando DATAFLOW
+        Path conBom = tmp.resolve("bom.csv");
+        Files.writeString(conBom, "\uFEFF" + Files.readString(csv));
+        assertEquals("DATAFLOW", new SdmxCsv(conBom.toFile()).getCabecera().get(0));
         assertEquals("Euro, per unit", datos.getFilas().get(0).get(3));
         assertEquals(2, datos.filtrar("es", "").size());
         assertEquals(2, datos.filtrar("", "2023").size());

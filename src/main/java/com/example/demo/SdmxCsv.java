@@ -24,7 +24,7 @@ public class SdmxCsv {
             String linea = br.readLine();
             if (linea == null) throw new IOException("El fichero está vacío");
             // Quitamos el BOM si lo trae
-            if (linea.startsWith("﻿")) linea = linea.substring(1);
+            if (linea.startsWith("\uFEFF")) linea = linea.substring(1);
             cabecera = separar(linea);
             linea = br.readLine();
             while (linea != null) {
