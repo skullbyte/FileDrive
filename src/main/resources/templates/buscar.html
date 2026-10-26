@@ -18,7 +18,7 @@
         </form>
 
         <p th:if="${resultados}" class="ayuda"
-           th:text="${#lists.size(resultados)} + ' apariciones de &quot;' + ${buscar.texto} + '&quot;'"></p>
+           th:text="${#lists.size(resultados)} + (${#lists.size(resultados) == 1} ? ' aparición' : ' apariciones') + ' de &quot;' + ${buscar.texto} + '&quot;'"></p>
         <table class="tabla" th:if="${resultados != null and !#lists.isEmpty(resultados)}">
             <thead><tr><th>Fichero</th><th>Línea</th><th>Columna</th><th>Texto</th></tr></thead>
             <tbody>

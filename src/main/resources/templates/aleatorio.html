@@ -75,7 +75,7 @@
                         <option th:each="c : ${campos}" th:value="${c}" th:text="${c}"></option>
                     </select>
                 </label>
-                <label>Valor <input type="text" th:field="*{valor}"></label>
+                <label>Valor <input type="text" th:field="*{valor}" placeholder="EDAD: número · FECHA_ALTA: AAAA-MM-DD"></label>
                 <p class="botones">
                     <button name="accion" value="updateCampo">update(fila, campo, valor)</button>
                     <button name="accion" value="delete" class="peligro">delete(fila)</button>

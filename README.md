@@ -5,8 +5,11 @@ Proyecto del Tema 1 (Ficheros) de **Acceso a Datos**, 2º DAM. Es un explorador 
 ## Arrancar
 
 ```bash
-./mvnw spring-boot:run
+./mvnw spring-boot:run        # Linux / macOS
+mvnw.cmd spring-boot:run      # Windows
 ```
+
+También se puede arrancar desde VS Code con la configuración de `.vscode/launch.json`. Hace falta Java 17 o superior.
 
 Abrir <http://localhost:8080>. Los ficheros se guardan en la carpeta `drive/` del proyecto; se puede cambiar con `filedrive.raiz` en `application.properties`.
 
