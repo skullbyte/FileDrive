@@ -359,9 +359,11 @@ public class Drive {
         }
     }
 
-    // Los textarea del navegador envían saltos de línea \r\n
+    // Los textarea del navegador envían saltos de línea \r\n: se pasan al salto de línea
+    // del sistema, el mismo que escribe BufferedWriter.newLine(), para no mezclar los dos
     private String normalizar(String texto) {
-        return texto == null ? "" : texto.replace("\r\n", "\n");
+        if (texto == null) return "";
+        return texto.replace("\r\n", "\n").replace("\n", System.lineSeparator());
     }
 
     // ===================== PRÁCTICA 9: ENCODING DE FICHEROS =====================

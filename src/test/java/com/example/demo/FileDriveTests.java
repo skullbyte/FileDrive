@@ -110,6 +110,10 @@ class FileDriveTests {
         faa.update(1, "DNI", "123456789012");
         assertEquals("123456789", faa.selectCampo(1, "DNI"));
 
+        // Caracteres de 4 bytes en UTF-8 (emoji) no se parten por la mitad
+        faa.update(1, "CIUDAD", "Granada 😀");
+        assertEquals("Granada 😀", faa.selectCampo(1, "CIUDAD"));
+
         assertThrows(IOException.class, () -> faa.update(1, "EDAD", "abc"));
         assertThrows(IOException.class, () -> faa.selectRowMap(10));
     }
@@ -120,10 +124,12 @@ class FileDriveTests {
         Files.writeString(tmp.resolve("e.txt"), "Ñandú\nacción\n", StandardCharsets.UTF_8);
         String r = drive.convertirEncoding("e.txt", "UTF-8", "out/e_latin1.txt", "ISO-8859-1");
         assertTrue(r.startsWith("Convertido"), r);
-        assertEquals("Ñandú\nacción\n", Files.readString(tmp.resolve("out/e_latin1.txt"), StandardCharsets.ISO_8859_1));
+        // newLine() escribe el salto de línea del sistema (\n en Linux, \r\n en Windows)
+        String esperado = "Ñandú" + System.lineSeparator() + "acción" + System.lineSeparator();
+        assertEquals(esperado, Files.readString(tmp.resolve("out/e_latin1.txt"), StandardCharsets.ISO_8859_1));
 
         drive.convertirEncoding("out/e_latin1.txt", "ISO-8859-1", "e16.txt", "UTF-16");
-        assertEquals("Ñandú\nacción\n", Files.readString(tmp.resolve("e16.txt"), StandardCharsets.UTF_16));
+        assertEquals(esperado, Files.readString(tmp.resolve("e16.txt"), StandardCharsets.UTF_16));
 
         assertTrue(drive.convertirEncoding("e.txt", "UTF-8", "e.txt", "ASCII").startsWith("ERROR"));
         assertTrue(drive.convertirEncoding("no.txt", "UTF-8", "x.txt", "ASCII").startsWith("ERROR"));

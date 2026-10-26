@@ -205,8 +205,8 @@ public class FicheroAleatorio {
                     break;
                 default:
                     // Se copian caracteres mientras quepan (sin partir una letra UTF-8 por la mitad)
-                    for (int c = 0; c < valor.length(); c++) {
-                        byte[] letra = String.valueOf(valor.charAt(c)).getBytes(StandardCharsets.UTF_8);
+                    for (int cp : valor.codePoints().toArray()) {
+                        byte[] letra = new String(Character.toChars(cp)).getBytes(StandardCharsets.UTF_8);
                         if (buf.remaining() < letra.length) break;
                         buf.put(letra);
                     }
