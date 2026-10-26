@@ -30,4 +30,4 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
+# .vscode/ se sube: tiene la configuración para arrancar el proyecto desde VS Code

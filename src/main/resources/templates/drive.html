@@ -46,8 +46,8 @@
                         <a th:if="${f.extension == 'csv'}" th:href="@{/csv(fichero=${f.ruta})}" title="Abrir en el editor SDMX-CSV">📊</a>
                         <a th:if="${f.extension == 'dat'}" th:href="@{/aleatorio(fichero=${f.ruta})}" title="Abrir como fichero de acceso aleatorio">🗃️</a>
                         <a th:if="${f.texto}" th:href="@{/encoding(ruta=${f.ruta})}" title="Cambiar encoding">🔤</a>
-                        <form th:action="@{/drive}" method="post" class="enlinea"
-                              th:attr="onsubmit=|return confirm('¿Borrar ${f.nombre}?')|">
+                        <form th:action="@{/drive}" method="post" class="enlinea" th:data-nombre="${f.nombre}"
+                              onsubmit="return confirm('¿Borrar ' + this.dataset.nombre + '?')">
                             <input type="hidden" name="_method" value="delete">
                             <input type="hidden" name="ruta" th:value="${f.ruta}">
                             <button class="peligro mini" title="Borrar">🗑</button>

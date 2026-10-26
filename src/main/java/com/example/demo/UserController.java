@@ -234,6 +234,9 @@ public class UserController {
     @GetMapping("/editor")
     public String editor(@RequestParam String ruta, Model model, RedirectAttributes flash) {
         try {
+            if (drive.resolver(ruta).length() > MAX_EDITOR) {
+                throw new IOException("El fichero es demasiado grande para el editor (máx. 2 MB): descárgalo");
+            }
             EditorModel editor = new EditorModel();
             editor.setRuta(ruta);
             editor.setContenido(drive.leerTexto(ruta));
@@ -246,6 +249,8 @@ public class UserController {
             return "redirect:/drive";
         }
     }
+
+    private static final long MAX_EDITOR = 2 * 1024 * 1024;
 
     // accion = guardar | final | principio
     @PostMapping("/editor")
@@ -336,12 +341,17 @@ public class UserController {
             FicheroAleatorio faa = abrirAleatorio(reg.getFichero());
             Map<String, String> datos = datosRegistro(reg);
             int fila = reg.getFila() == null ? -1 : reg.getFila();
+            if (reg.getAccion() == null) throw new IOException("Falta la acción");
             switch (reg.getAccion()) {
                 case "insertar":
                     if (reg.getFila() == null) {
                         long pos = faa.insertar(datos);
                         model.addAttribute("mensaje", "insertar(reg) → registro " + pos);
                     } else {
+                        // Se permiten huecos, pero no tan grandes como para crear un fichero gigante
+                        if (fila > faa.getNumReg() + 1000) {
+                            throw new IOException("La fila " + fila + " está demasiado lejos del final (hay " + faa.getNumReg() + " registros)");
+                        }
                         faa.insertar(datos, fila);
                         model.addAttribute("mensaje", "insertar(reg, " + fila + ")");
                     }

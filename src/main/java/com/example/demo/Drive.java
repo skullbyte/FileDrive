@@ -91,7 +91,8 @@ public class Drive {
             throw new FileNotFoundException("No existe el fichero o directorio " + ruta);
         }
         FicheroInfo info = new FicheroInfo(f, relativa(f));
-        if (f.isFile()) {
+        // Las vocales solo se cuentan en ficheros que no sean enormes
+        if (f.isFile() && f.length() <= 10 * 1024 * 1024) {
             info.setVocales(contarVocalesBufferedReader(f));
             info.setVocalesFileReader(contarVocalesFileReader(f));
         }
