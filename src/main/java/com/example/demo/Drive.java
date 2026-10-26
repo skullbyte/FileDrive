@@ -11,6 +11,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -50,6 +52,12 @@ public class Drive {
     // Ruta relativa a la raíz con "/" como separador (la que usa la web)
     public String relativa(File f) {
         return raiz.toPath().relativize(f.toPath()).toString().replace(File.separatorChar, '/');
+    }
+
+    // Carpeta "de verdad": los enlaces simbólicos no se recorren, para no salir del drive
+    // al borrar ni entrar en bucles infinitos si un enlace apunta a una carpeta padre
+    private boolean esCarpetaReal(File f) {
+        return f.isDirectory() && !Files.isSymbolicLink(f.toPath());
     }
 
     // Ejemplo de función para la Práctica 1 (convierte texto a mayúsculas)
@@ -112,8 +120,10 @@ public class Drive {
         File[] hijos = dir.listFiles();
         if (hijos == null) return;
         for (File f : hijos) {
-            if (f.isDirectory()) {
+            if (esCarpetaReal(f)) {
                 recorrer(f, rutas, extensiones);
+            } else if (f.isDirectory()) {
+                continue;
             } else if (extensiones.length == 0) {
                 rutas.add(relativa(f));
             } else {
@@ -186,7 +196,8 @@ public class Drive {
     }
 
     private void borrarRecursivo(File f) throws IOException {
-        if (f.isDirectory()) {
+        // Si es un enlace simbólico solo se borra el enlace, no lo que hay al otro lado
+        if (esCarpetaReal(f)) {
             File[] hijos = f.listFiles();
             if (hijos != null) {
                 for (File hijo : hijos) {
@@ -210,9 +221,9 @@ public class Drive {
         File[] hijos = dir.listFiles();
         if (hijos == null) return;
         for (File f : hijos) {
-            if (f.isDirectory()) {
+            if (esCarpetaReal(f)) {
                 buscarYBorrarRecursivo(f, nombre, borrados);
-            } else if (f.getName().equals(nombre)) {
+            } else if (f.isFile() && f.getName().equals(nombre)) {
                 String ruta = relativa(f);
                 if (f.delete()) {
                     borrados.add(ruta);
@@ -238,7 +249,7 @@ public class Drive {
     // Implementación 1: FileReader leyendo carácter a carácter con read()
     public int[] contarVocalesFileReader(File f) throws IOException {
         int[] vocales = new int[5];
-        try (FileReader fil = new FileReader(f)) {
+        try (FileReader fil = new FileReader(f, StandardCharsets.UTF_8)) {
             int letra = fil.read();
             while (letra != -1) {
                 int i = indiceVocal(letra);
@@ -252,7 +263,7 @@ public class Drive {
     // Implementación 2: BufferedReader leyendo línea a línea con readLine()
     public int[] contarVocalesBufferedReader(File f) throws IOException {
         int[] vocales = new int[5];
-        try (BufferedReader brf = new BufferedReader(new FileReader(f))) {
+        try (BufferedReader brf = new BufferedReader(new FileReader(f, StandardCharsets.UTF_8))) {
             String line = brf.readLine();
             while (line != null) {
                 for (int j = 0; j < line.length(); j++) {
@@ -282,12 +293,12 @@ public class Drive {
         Arrays.sort(hijos);
         for (File f : hijos) {
             if (f.isDirectory()) {
-                if (recursivo) buscarTextoEn(f, texto, true, resultado);
+                if (recursivo && esCarpetaReal(f)) buscarTextoEn(f, texto, true, resultado);
                 continue;
             }
             // Los ficheros binarios (.dat, imágenes...) no se leen como texto
             if (!FicheroInfo.esTexto(f)) continue;
-            try (BufferedReader br = new BufferedReader(new FileReader(f))) {
+            try (BufferedReader br = new BufferedReader(new FileReader(f, StandardCharsets.UTF_8))) {
                 String linea = br.readLine();
                 int numLinea = 1;
                 while (linea != null) {
@@ -309,7 +320,7 @@ public class Drive {
     public String leerTexto(String ruta) throws IOException {
         File f = resolver(ruta);
         StringBuilder sb = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(f))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(f, StandardCharsets.UTF_8))) {
             String linea = br.readLine();
             while (linea != null) {
                 sb.append(linea).append('\n');
@@ -322,7 +333,7 @@ public class Drive {
     // 1º CREAR / guardar: sobrescribe el fichero con el contenido indicado
     public void guardarTexto(String ruta, String contenido) throws IOException {
         File f = resolver(ruta);
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(f))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(f, StandardCharsets.UTF_8))) {
             bw.write(normalizar(contenido));
         }
     }
@@ -331,7 +342,7 @@ public class Drive {
     public void anadirFinal(String ruta, String texto) throws IOException {
         File f = resolver(ruta);
         if (!f.exists()) throw new FileNotFoundException("No existe: " + ruta);
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(f, true))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(f, StandardCharsets.UTF_8, true))) {
             // Si la última línea no acaba en salto de línea, lo ponemos para no pegar el texto a ella
             if (!terminaEnSaltoDeLinea(f)) bw.newLine();
             bw.write(normalizar(texto));
@@ -344,10 +355,10 @@ public class Drive {
         File f = resolver(ruta);
         if (!f.exists()) throw new FileNotFoundException("No existe: " + ruta);
         String anterior = leerTexto(ruta);
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(f))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(f, StandardCharsets.UTF_8))) {
             bw.write(normalizar(texto));
             bw.newLine();
-            bw.write(anterior);
+            bw.write(normalizar(anterior));
         }
     }
 
@@ -382,20 +393,35 @@ public class Drive {
             }
             if (fSalida.getParentFile() != null) fSalida.getParentFile().mkdirs();
             int lineas = 0;
+            int ilegibles = 0;      // caracteres que no se pudieron leer con el encoding de entrada
+            int perdidos = 0;       // caracteres que no existen en el encoding de salida (se escriben como ?)
+            java.nio.charset.CharsetEncoder codificador = java.nio.charset.Charset.forName(charset(encSalida)).newEncoder();
             try (BufferedReader br = new BufferedReader(
                          new InputStreamReader(new FileInputStream(fEntrada), charset(encEntrada)));
                  BufferedWriter bw = new BufferedWriter(
                          new OutputStreamWriter(new FileOutputStream(fSalida), charset(encSalida)))) {
                 String linea = br.readLine();
                 while (linea != null) {
+                    for (int i = 0; i < linea.length(); i++) {
+                        char c = linea.charAt(i);
+                        if (c == '\uFFFD') ilegibles++;
+                        else if (!Character.isSurrogate(c) && !codificador.canEncode(c)) perdidos++;
+                    }
                     bw.write(linea);
                     bw.newLine();
                     lineas++;
                     linea = br.readLine();
                 }
             }
-            return "Convertido " + entrada + " (" + encEntrada + ") → " + salida + " (" + encSalida + "): "
+            String mensaje = "Convertido " + entrada + " (" + encEntrada + ") → " + salida + " (" + encSalida + "): "
                     + lineas + " líneas, " + fEntrada.length() + " → " + fSalida.length() + " bytes";
+            if (ilegibles > 0) {
+                mensaje += ". AVISO: " + ilegibles + " caracteres no son válidos en " + encEntrada + " (¿es ese su encoding?)";
+            }
+            if (perdidos > 0) {
+                mensaje += ". AVISO: " + perdidos + " caracteres no existen en " + encSalida + " y se han escrito como ?";
+            }
+            return mensaje;
         } catch (FileNotFoundException e) {
             return "ERROR fichero no encontrado: " + e.getMessage();
         } catch (IOException e) {

@@ -52,6 +52,22 @@ class FileDriveTests {
         assertThrows(IOException.class, () -> drive.borrar(""));
     }
 
+    // Borrar una carpeta con un enlace simbólico dentro no toca lo que hay al otro lado
+    @Test
+    void borrarNoSigueEnlacesSimbolicos(@TempDir Path fuera) throws IOException {
+        Path secreto = Files.writeString(fuera.resolve("secreto.txt"), "no me borres");
+        Files.createDirectories(tmp.resolve("carpeta"));
+        try {
+            Files.createSymbolicLink(tmp.resolve("carpeta/enlace"), fuera);
+        } catch (UnsupportedOperationException | IOException e) {
+            return;   // En Windows sin permisos no se pueden crear enlaces: no hay nada que probar
+        }
+        assertTrue(drive.buscarYBorrar("", "secreto.txt").isEmpty());
+        drive.borrar("carpeta");
+        assertFalse(Files.exists(tmp.resolve("carpeta")));
+        assertTrue(Files.exists(secreto));
+    }
+
     // Prácticas 3 y 5
     @Test
     void vocalesYEscrituraSecuencial() throws IOException {
@@ -133,6 +149,12 @@ class FileDriveTests {
 
         drive.convertirEncoding("out/e_latin1.txt", "ISO-8859-1", "e16.txt", "UTF-16");
         assertEquals(esperado, Files.readString(tmp.resolve("e16.txt"), StandardCharsets.UTF_16));
+
+        // Pasar a ASCII pierde la Ñ, la ú y la ó: se avisa
+        assertTrue(drive.convertirEncoding("e.txt", "UTF-8", "e_ascii.txt", "ASCII").contains("AVISO: 3 caracteres"));
+        // Leer UTF-8 como si fuera ASCII: los bytes de las letras con tilde no son válidos
+        assertTrue(drive.convertirEncoding("e.txt", "UTF-8", "e_mal.txt", "ASCII").contains("AVISO"));
+        assertTrue(drive.convertirEncoding("e.txt", "ASCII", "e_mal2.txt", "UTF-8").contains("no son válidos en ASCII"));
 
         assertTrue(drive.convertirEncoding("e.txt", "UTF-8", "e.txt", "ASCII").startsWith("ERROR"));
         assertTrue(drive.convertirEncoding("no.txt", "UTF-8", "x.txt", "ASCII").startsWith("ERROR"));

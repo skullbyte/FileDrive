@@ -31,7 +31,7 @@
         </form>
 
         <p th:if="${enc.resultado}" class="aviso"
-           th:classappend="${#strings.startsWith(enc.resultado, 'ERROR')} ? 'mal' : 'ok'" th:text="${enc.resultado}"></p>
+           th:classappend="${#strings.startsWith(enc.resultado, 'ERROR')} ? 'mal' : (${#strings.contains(enc.resultado, 'AVISO')} ? 'atencion' : 'ok')" th:text="${enc.resultado}"></p>
         <p class="botones" th:if="${enc.resultado != null and !#strings.startsWith(enc.resultado, 'ERROR')}">
             <a class="btn secundario" th:href="@{/drive/info(ruta=${enc.salida})}">ℹ️ Ver fichero de salida</a>
             <a class="btn secundario" th:href="@{/drive/descargar(ruta=${enc.salida})}">⬇️ Descargar</a>

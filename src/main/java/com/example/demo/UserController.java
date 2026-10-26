@@ -302,6 +302,9 @@ public class UserController {
         }
         try {
             SdmxCsv datos = new SdmxCsv(drive.resolver(csv.getFichero()));
+            if (!datos.columnasQueFaltan().isEmpty()) {
+                model.addAttribute("error", "No parece un fichero SDMX-CSV: faltan las columnas " + datos.columnasQueFaltan());
+            }
             List<List<String>> filas = datos.filtrar(csv.getPais(), csv.getFecha());
             model.addAttribute("cabecera", datos.getCabecera());
             model.addAttribute("totalFilas", datos.getFilas().size());
@@ -342,6 +345,10 @@ public class UserController {
             Map<String, String> datos = datosRegistro(reg);
             int fila = reg.getFila() == null ? -1 : reg.getFila();
             if (reg.getAccion() == null) throw new IOException("Falta la acción");
+            // Todas las acciones menos insertar y selectColumna necesitan la fila
+            if (reg.getFila() == null && !List.of("insertar", "selectColumna").contains(reg.getAccion())) {
+                throw new IOException("Indica el número de fila");
+            }
             switch (reg.getAccion()) {
                 case "insertar":
                     if (reg.getFila() == null) {

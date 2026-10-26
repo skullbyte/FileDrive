@@ -72,6 +72,7 @@ code { font-family: ui-monospace, "JetBrains Mono", Consolas, monospace; font-si
 .aviso { padding: 10px 14px; border-radius: 8px; margin: 0 0 16px; word-break: break-word; }
 .aviso.ok { background: var(--ok-fondo); color: var(--ok-texto); }
 .aviso.mal { background: var(--mal-fondo); color: var(--mal-texto); }
+.aviso.atencion { background: #fff6dd; color: #7a5300; }
 
 /* ----- Tablas ----- */
 .tabla { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -84,6 +85,7 @@ code { font-family: ui-monospace, "JetBrains Mono", Consolas, monospace; font-si
 .tabla .vacio { text-align: center; color: var(--suave); padding: 20px; }
 .tabla tr.borrado td { color: #b0b8c1; font-style: italic; }
 .icono { width: 28px; font-size: 18px; }
+.vocales { white-space: nowrap; }
 .vocales span { display: inline-block; min-width: 26px; color: var(--suave); font-variant-numeric: tabular-nums; }
 .acciones { white-space: nowrap; text-align: right; }
 .acciones a { margin-left: 4px; }

@@ -30,6 +30,7 @@
                         <a th:if="${f.directorio}" th:href="@{/drive(ruta=${f.ruta})}" th:text="${f.nombre}"></a>
                         <a th:if="${f.texto}" th:href="@{/editor(ruta=${f.ruta})}" th:text="${f.nombre}"></a>
                         <a th:if="${f.fichero and !f.texto}" th:href="@{/drive/info(ruta=${f.ruta})}" th:text="${f.nombre}"></a>
+                        <span th:unless="${f.directorio or f.fichero}" th:text="${f.nombre}"></span>
                     </td>
                     <td th:text="${f.tamanoLegible}"></td>
                     <td th:text="${f.ultimaModificacion}"></td>

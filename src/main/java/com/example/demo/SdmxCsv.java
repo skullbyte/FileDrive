@@ -63,6 +63,15 @@ public class SdmxCsv {
         return valores;
     }
 
+    // Columnas que tiene que traer un fichero SDMX-CSV para los filtros y el resumen
+    public List<String> columnasQueFaltan() {
+        List<String> faltan = new ArrayList<>();
+        for (String c : List.of("geo", "TIME_PERIOD", "OBS_VALUE")) {
+            if (columna(c) < 0) faltan.add(c);
+        }
+        return faltan;
+    }
+
     public int columna(String nombre) {
         for (int i = 0; i < cabecera.size(); i++) {
             if (cabecera.get(i).equalsIgnoreCase(nombre)) return i;
@@ -122,6 +131,7 @@ public class SdmxCsv {
             } catch (NumberFormatException e) {
                 continue;
             }
+            if (!Double.isFinite(num)) continue;   // "NaN" o "Infinity" no cuentan
             double[] mm = minMax.get(valor(fila, colGeo));
             if (mm == null) {
                 minMax.put(valor(fila, colGeo), new double[] { num, num });
