@@ -77,6 +77,7 @@ public class Drive {
             // Práctica 3: conteo de vocales de cada fichero de texto (si no es enorme)
             if (info.isTexto() && f.length() <= 1024 * 1024) {
                 info.setVocales(contarVocalesBufferedReader(f));
+                info.setVocalesFileReader(contarVocalesFileReader(f));
             }
             lista.add(info);
         }
@@ -283,6 +284,8 @@ public class Drive {
                 if (recursivo) buscarTextoEn(f, texto, true, resultado);
                 continue;
             }
+            // Los ficheros binarios (.dat, imágenes...) no se leen como texto
+            if (!FicheroInfo.esTexto(f)) continue;
             try (BufferedReader br = new BufferedReader(new FileReader(f))) {
                 String linea = br.readLine();
                 int numLinea = 1;
@@ -328,6 +331,8 @@ public class Drive {
         File f = resolver(ruta);
         if (!f.exists()) throw new FileNotFoundException("No existe: " + ruta);
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(f, true))) {
+            // Si la última línea no acaba en salto de línea, lo ponemos para no pegar el texto a ella
+            if (!terminaEnSaltoDeLinea(f)) bw.newLine();
             bw.write(normalizar(texto));
             bw.newLine();
         }
@@ -342,6 +347,14 @@ public class Drive {
             bw.write(normalizar(texto));
             bw.newLine();
             bw.write(anterior);
+        }
+    }
+
+    private boolean terminaEnSaltoDeLinea(File f) throws IOException {
+        if (f.length() == 0) return true;
+        try (java.io.RandomAccessFile raf = new java.io.RandomAccessFile(f, "r")) {
+            raf.seek(f.length() - 1);
+            return raf.read() == '\n';
         }
     }
 
@@ -360,6 +373,10 @@ public class Drive {
         try {
             File fEntrada = resolver(entrada);
             File fSalida = resolver(salida);
+            // Si fueran el mismo, FileOutputStream lo vaciaría antes de leerlo
+            if (fEntrada.equals(fSalida)) {
+                return "ERROR: el fichero de salida debe ser distinto del de entrada";
+            }
             if (fSalida.getParentFile() != null) fSalida.getParentFile().mkdirs();
             int lineas = 0;
             try (BufferedReader br = new BufferedReader(

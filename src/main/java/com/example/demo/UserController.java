@@ -112,8 +112,13 @@ public class UserController {
 
     // Descargar un fichero del drive
     @GetMapping("/drive/descargar")
-    public ResponseEntity<FileSystemResource> descargar(@RequestParam String ruta) throws IOException {
-        File f = drive.resolver(ruta);
+    public ResponseEntity<FileSystemResource> descargar(@RequestParam String ruta) {
+        File f;
+        try {
+            f = drive.resolver(ruta);
+        } catch (IOException e) {
+            return ResponseEntity.notFound().build();
+        }
         if (!f.isFile()) {
             return ResponseEntity.notFound().build();
         }
@@ -128,7 +133,7 @@ public class UserController {
     @PostMapping("/drive/subir")
     public String subir(@RequestParam String carpeta, @RequestParam("fichero") MultipartFile fichero, RedirectAttributes flash) {
         try {
-            if (fichero.isEmpty()) throw new IOException("No se ha elegido ningún fichero");
+            if (fichero.isEmpty() || fichero.getOriginalFilename() == null) throw new IOException("No se ha elegido ningún fichero");
             File destino = drive.resolver(carpeta + "/" + new File(fichero.getOriginalFilename()).getName());
             fichero.transferTo(destino);
             flash.addFlashAttribute("mensaje", "Subido " + drive.relativa(destino));
@@ -148,7 +153,10 @@ public class UserController {
                 File f = drive.crearCarpeta(crear.getCarpeta(), crear.getNombre().trim());
                 flash.addFlashAttribute("mensaje", "Carpeta creada: " + drive.relativa(f));
             } else {
-                File f = drive.crearFichero(crear.getCarpeta(), crear.getNombre().trim());
+                // Práctica 5: si no se indica extensión se crea un .txt
+                String nombre = crear.getNombre().trim();
+                if (!nombre.contains(".")) nombre += ".txt";
+                File f = drive.crearFichero(crear.getCarpeta(), nombre);
                 if (crear.getContenido() != null && !crear.getContenido().isEmpty()) {
                     drive.guardarTexto(drive.relativa(f), crear.getContenido());
                 }
@@ -204,6 +212,11 @@ public class UserController {
     }
 
     // ---------- Práctica 4: búsqueda de texto (línea y columna)
+
+    @GetMapping("/buscar")
+    public String buscarSinDatos() {
+        return "redirect:/drive";
+    }
 
     @PostMapping("/buscar")
     public String buscar(@ModelAttribute BuscarModel buscar, Model model) {
@@ -320,7 +333,7 @@ public class UserController {
     @PostMapping("/aleatorio")
     public String aleatorioAccion(@ModelAttribute RegistroModel reg, Model model) {
         try {
-            FicheroAleatorio faa = FicheroAleatorio.personas(drive.resolver(reg.getFichero()));
+            FicheroAleatorio faa = abrirAleatorio(reg.getFichero());
             Map<String, String> datos = datosRegistro(reg);
             int fila = reg.getFila() == null ? -1 : reg.getFila();
             switch (reg.getAccion()) {
@@ -374,6 +387,14 @@ public class UserController {
         return aleatorioResultado(reg, model);
     }
 
+    // Solo se permiten ficheros .dat para no estropear un fichero de texto escribiendo registros
+    private FicheroAleatorio abrirAleatorio(String fichero) throws IOException {
+        if (fichero == null || !fichero.endsWith(".dat")) {
+            throw new IOException("El fichero de acceso aleatorio debe ser .dat");
+        }
+        return FicheroAleatorio.personas(drive.resolver(fichero));
+    }
+
     private Map<String, String> datosRegistro(RegistroModel reg) {
         Map<String, String> datos = new LinkedHashMap<>();
         datos.put("DNI", vacio(reg.getDni()));
@@ -390,14 +411,15 @@ public class UserController {
 
     private String aleatorioResultado(RegistroModel reg, Model model) {
         List<Map<String, String>> registros = new ArrayList<>();
+        // La estructura del registro se muestra siempre, aunque el fichero no sea válido
+        FicheroAleatorio estructura = FicheroAleatorio.personas(null);
+        model.addAttribute("campos", estructura.getCampos());
+        model.addAttribute("longReg", estructura.getLongReg());
         try {
-            if (!reg.getFichero().endsWith(".dat")) throw new IOException("El fichero debe ser .dat");
-            FicheroAleatorio faa = FicheroAleatorio.personas(drive.resolver(reg.getFichero()));
+            FicheroAleatorio faa = abrirAleatorio(reg.getFichero());
             for (int i = 0; i < faa.getNumReg(); i++) {
                 registros.add(faa.selectRowMap(i));
             }
-            model.addAttribute("campos", faa.getCampos());
-            model.addAttribute("longReg", faa.getLongReg());
             model.addAttribute("tamano", drive.resolver(reg.getFichero()).length());
         } catch (IOException e) {
             model.addAttribute("error", e.getMessage());

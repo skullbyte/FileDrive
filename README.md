@@ -21,6 +21,21 @@ Abrir <http://localhost:8080>. Los ficheros se guardan en la carpeta `drive/` de
 | 5 | Ficheros de acceso aleatorio con `RandomAccessFile`: registros de longitud fija (texto, int y fecha); `insertar`, `selectCampo`, `selectColumna`, `selectRowList`, `selectRowMap`, `update` y `delete` | 7, 8 | `/aleatorio` |
 | 6 | Cambio de encoding entre ASCII, UTF-8, UTF-16 e ISO-8859-1 (`InputStreamReader` → `OutputStreamWriter`) | 9 | `/encoding` |
 
+## Datos de ejemplo
+
+- `drive/eurostat/paro_une_rt_a.csv`: tasa de paro anual de EUROSTAT (dataset `une_rt_a`, 15-74 años, % de la población activa, ambos sexos, 2014-2025) en formato SDMX-CSV. Se descargó de la API de EUROSTAT:
+  `https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/une_rt_a/A.Y15-74.PC_ACT.T.?format=SDMX-CSV&startPeriod=2014`
+- `drive/personas.dat`: fichero de acceso aleatorio con 3 registros.
+- `drive/familia/`: la estructura de la práctica 2.
+
+## Tests
+
+```bash
+./mvnw test
+```
+
+`FileDriveTests` prueba la lógica de cada práctica sobre una carpeta temporal.
+
 ## Estructura
 
 Sigue los pasos para integrar las tareas en el proyecto:

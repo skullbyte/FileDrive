@@ -71,8 +71,15 @@ public class FicheroInfo {
 
     // Ficheros que se pueden abrir en el editor de texto
     public boolean isTexto() {
+        return esTexto(f);
+    }
+
+    public static boolean esTexto(File f) {
+        String n = f.getName();
+        int i = n.lastIndexOf('.');
+        String ext = i > 0 ? n.substring(i + 1).toLowerCase() : "";
         return f.isFile() && java.util.List.of("txt", "csv", "md", "xml", "json", "html", "css", "js", "java",
-                "properties", "log", "ini", "yml", "yaml", "sql", "").contains(getExtension());
+                "properties", "log", "ini", "yml", "yaml", "sql", "").contains(ext);
     }
 
     public int getNumHijos() {
@@ -96,6 +103,9 @@ public class FicheroInfo {
     public void setVocales(int[] vocales) { this.vocales = vocales; }
     public int[] getVocalesFileReader() { return vocalesFileReader; }
     public void setVocalesFileReader(int[] vocalesFileReader) { this.vocalesFileReader = vocalesFileReader; }
+    public String getVocalesFileReaderTexto() {
+        return vocalesFileReader == null ? "" : java.util.Arrays.toString(vocalesFileReader);
+    }
 
     public int getTotalVocales() {
         if (vocales == null) return 0;

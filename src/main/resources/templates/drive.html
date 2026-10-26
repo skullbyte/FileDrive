@@ -34,7 +34,7 @@
                     <td th:text="${f.tamanoLegible}"></td>
                     <td th:text="${f.ultimaModificacion}"></td>
                     <td><code th:text="${f.permisos}"></code></td>
-                    <td class="vocales">
+                    <td class="vocales" th:title="${f.vocalesFileReader} ? 'BufferedReader.readLine() — con FileReader.read(): ' + ${f.vocalesFileReaderTexto}">
                         <th:block th:if="${f.vocales}">
                             <span th:each="v : ${f.vocales}" th:text="${v}"></span>
                         </th:block>
